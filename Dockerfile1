@@ -30,3 +30,4 @@ EXPOSE 8082
 
 # Define el comando de inicio
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+
