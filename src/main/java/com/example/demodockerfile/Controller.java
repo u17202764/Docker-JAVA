@@ -12,4 +12,9 @@ public class Controller {
         return "Hello, Docker V1!";
     }
 
+    @GetMapping("/")
+    public String helloV() {
+        return "Hello, Docker!";
+    }
+
 }
