@@ -32,7 +32,7 @@ public class DataSourceConfig {
     private String trustStorePassword;
 
     @Bean
-    @Profile("prod")
+    @Profile("dev")
     public DataSource prodDataSource() {
         try {
             configurarSSL();
@@ -43,7 +43,7 @@ public class DataSourceConfig {
         }
     }
 
- 
+
 
     private DriverManagerDataSource crearDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
