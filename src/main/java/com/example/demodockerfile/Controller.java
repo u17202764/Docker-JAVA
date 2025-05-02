@@ -12,11 +12,11 @@ public class Controller {
     public Controller(CategoriaRepositorio categoriaRepositorio) {
         this.categoriaRepositorio = categoriaRepositorio;
     }
-    @GetMapping("/listado")
-    public ResponseEntity listado() {
-        List<Categoria> listado = (List<Categoria>) categoriaRepositorio.findAll();
-        return ResponseEntity.ok(listado);
-    }
+        @GetMapping("/listado")
+        public ResponseEntity listado() {
+            List<Categoria> listado = (List<Categoria>) categoriaRepositorio.findAll();
+            return ResponseEntity.ok(listado);
+        }
 
 
 
