@@ -19,7 +19,8 @@ public class DataSourceConfig {
     @Value("${spring.datasource.username}")
     private String dbUser;
 
-    private String dbPassword="AVNS_z1DLL8B-VJGi0o4I9FH";
+    @Value("${spring.datasource.password}")
+    private String dbPassword;
 
     @Value("${spring.datasource.driver-class-name}")
     private String dbDriverClassName;
@@ -46,7 +47,7 @@ public class DataSourceConfig {
 
     private DriverManagerDataSource crearDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl("jdbc:mysql://mysql-17918016-xvladi25x-d298.k.aivencloud.com:21673/defaultdb?useSSL=true&requireSSL=true&verifyServerCertificate=true&sslMode=VERIFY_CA");
+        dataSource.setUrl(dbUrl);
         dataSource.setUsername(dbUser);
         dataSource.setPassword(dbPassword);
         dataSource.setDriverClassName(dbDriverClassName);
