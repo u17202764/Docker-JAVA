@@ -46,7 +46,7 @@ public class DataSourceConfig {
 
     private DriverManagerDataSource crearDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl(dbUrl);
+        dataSource.setUrl("jdbc:mysql://mysql-17918016-xvladi25x-d298.k.aivencloud.com:21673/defaultdb?useSSL=true&requireSSL=true&verifyServerCertificate=true&sslMode=VERIFY_CA");
         dataSource.setUsername(dbUser);
         dataSource.setPassword(dbPassword);
         dataSource.setDriverClassName(dbDriverClassName);

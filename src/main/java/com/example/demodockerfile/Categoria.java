@@ -1,5 +1,10 @@
 package com.example.demodockerfile;
 
+import jakarta.persistence.*;
+import lombok.Data;
+
+@Entity
+@Data
 public class Categoria {
     public Categoria( ) {
 
@@ -9,6 +14,8 @@ public class Categoria {
         this.id = id;
         this.nombre = nombre;
     }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
     Integer id;
     String nombre;
