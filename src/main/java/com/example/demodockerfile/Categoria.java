@@ -2,7 +2,7 @@ package com.example.demodockerfile;
 
 import jakarta.persistence.*;
 import lombok.Data;
-
+@Table
 @Entity
 @Data
 public class Categoria {
