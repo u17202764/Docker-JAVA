@@ -1,4 +1,4 @@
-package com.example.demodockerfile;
+package com.example.demodockerfile.config_app;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -16,4 +16,6 @@ public class WebConfig implements WebMvcConfigurer {
                 //.allowCredentials(true)
                 .maxAge(3600);
     }
+
+
 }
