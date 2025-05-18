@@ -53,7 +53,7 @@ public class ControllerPrivate {
              return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
          }
          categoriaService.eliminar(id);
-         notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
+        // notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
          return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
      }
 
