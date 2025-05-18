@@ -4,6 +4,7 @@ import com.example.demodockerfile.entity.Producto;
 import com.example.demodockerfile.service.repository.ProductoRepositorio;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,8 @@ import java.util.UUID;
 public class ProductoService {
     @Autowired
     private ProductoRepositorio productoRepositorio;
+    @Autowired
+    private   SimpMessagingTemplate messagingTemplate;
 
     public Iterable<Producto> listar() {
         return productoRepositorio.findAll();
@@ -24,7 +27,10 @@ public class ProductoService {
     @Transactional
     public Producto guardar(Producto producto, MultipartFile file) {
         try {
+            Producto p= productoRepositorio.save(producto);
+            messagingTemplate.convertAndSend("/topic/productos", p); // Notificación WebSocket
             return productoRepositorio.save(producto);
+
         } catch (Exception e) {
             log.error("Error al guardar el producto", e);
             throw new RuntimeException("Error al guardar el producto", e);

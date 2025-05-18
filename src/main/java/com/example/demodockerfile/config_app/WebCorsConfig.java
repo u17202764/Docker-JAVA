@@ -5,7 +5,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class WebCorsConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -13,9 +13,11 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOriginPatterns("*")  // Permite cualquier origen con http
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
-                //.allowCredentials(true)
                 .maxAge(3600);
+
+        registry.addMapping("/ws-notifications/**").allowedOrigins("*");
     }
+
 
 
 }

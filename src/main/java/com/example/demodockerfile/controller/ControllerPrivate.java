@@ -1,5 +1,6 @@
 package com.example.demodockerfile.controller;
 
+import com.example.demodockerfile.service.NotificationService;
 import com.example.demodockerfile.entity.Categoria;
 import com.example.demodockerfile.entity.Producto;
 import com.example.demodockerfile.service.CategoriaService;
@@ -23,6 +24,8 @@ public class ControllerPrivate {
     private CategoriaService categoriaService;
     @Autowired
     private ProductoService productoService;
+    @Autowired
+    private NotificationService notificationService;
 
     @PostMapping("/crearCategoria")
     public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
@@ -34,8 +37,12 @@ public class ControllerPrivate {
             return ResponseResult.error("El nombre de la categoria no debe ser vacio", HttpStatus.BAD_REQUEST);
         }
         Categoria nuevaCategoria = categoriaService.guardar(categoria);
+        notificationService.sentNotificationSocket(categoria);
+
         return ResponseResult.success("Categoria creada", nuevaCategoria, HttpStatus.CREATED);
     }
+      
+
 
     @GetMapping("/listadoCategoria")
     public ResponseEntity listado() {
@@ -78,7 +85,7 @@ public class ControllerPrivate {
         if (producto.getNombre() == null || producto.getNombre().isEmpty()) {
             return ResponseResult.error("nombre obligatorio", HttpStatus.BAD_REQUEST);
         }
-        if(productoService.buscarProductoPorNombre(producto.getNombre()).isPresent()){
+        if (productoService.buscarProductoPorNombre(producto.getNombre()).isPresent()) {
             return ResponseResult.error("Ya existe un producto con el nombre " + producto.getNombre(), HttpStatus.BAD_REQUEST);
         }
         if (producto.getPrecio() == null || producto.getPrecio() <= 0) {
@@ -91,15 +98,16 @@ public class ControllerPrivate {
         return ResponseResult.success("Producto guardado", productoGuardado, HttpStatus.CREATED);
     }
 
-     @GetMapping("/buscarProducto/{id}")
+    @GetMapping("/buscarProducto/{id}")
     public ResponseEntity<?> buscarProducto(@PathVariable Integer id) {
-         log.info("Buscando producto con id: {}", id);
-         Producto producto = productoService.buscarPorId(id);
-         if (producto == null) {
-             return ResponseResult.error("No existe producto con el id " + id, HttpStatus.NOT_FOUND);
-         }
-         return ResponseResult.success("Producto encontrado", producto, HttpStatus.OK);
-     }
+        log.info("Buscando producto con id: {}", id);
+        Producto producto = productoService.buscarPorId(id);
+        if (producto == null) {
+            return ResponseResult.error("No existe producto con el id " + id, HttpStatus.NOT_FOUND);
+        }
+        return ResponseResult.success("Producto encontrado", producto, HttpStatus.OK);
+    }
+
     @DeleteMapping("/eliminarProducto/{id}")
     public ResponseEntity<?> eliminarProducto(@PathVariable Integer id) {
         log.info("Eliminando producto con id: {}", id);
@@ -110,5 +118,6 @@ public class ControllerPrivate {
         productoService.eliminar(id);
         return ResponseResult.success("Producto eliminado", null, HttpStatus.NO_CONTENT);
     }
+
 
 }

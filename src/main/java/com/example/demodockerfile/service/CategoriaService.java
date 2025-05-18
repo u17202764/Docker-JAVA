@@ -4,6 +4,7 @@ import aj.org.objectweb.asm.Opcodes;
 import com.example.demodockerfile.entity.Categoria;
 import com.example.demodockerfile.service.repository.CategoriaRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -12,7 +13,6 @@ import java.util.Optional;
 public class CategoriaService {
     @Autowired
     private CategoriaRepositorio categoriaRepositorio;
-
 
     public Iterable<Categoria> listar() {
         return categoriaRepositorio.findAll();
@@ -23,7 +23,8 @@ public class CategoriaService {
     }
 
     public Categoria guardar(Categoria categoria) {
-        return categoriaRepositorio.save(categoria);
+        Categoria c = categoriaRepositorio.save(categoria);
+        return c;
     }
 
     public void eliminar(Integer id) {
@@ -37,4 +38,7 @@ public class CategoriaService {
     Optional<Categoria> buscarPorNombre(String nombre) {
         return categoriaRepositorio.findByNombre(nombre);
     }
+
+
+
 }
