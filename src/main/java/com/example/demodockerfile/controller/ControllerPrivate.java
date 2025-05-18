@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -44,7 +45,17 @@ public class ControllerPrivate {
         return ResponseResult.success("Categoria creada", nuevaCategoria, HttpStatus.CREATED);
     }
 
-
+     @DeleteMapping("/eliminarCategoria/{id}")
+    public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
+         log.info("Eliminando categoria con id: {}", id);
+         Optional<Categoria> categoria = categoriaService.buscarPorId(id);
+         if (categoria.isEmpty()) {
+             return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
+         }
+         categoriaService.eliminar(id);
+         notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
+         return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
+     }
 
     @GetMapping("/listadoCategoria")
     public ResponseEntity listado() {

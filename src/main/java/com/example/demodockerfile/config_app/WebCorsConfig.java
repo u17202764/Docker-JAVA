@@ -10,13 +10,13 @@ public class WebCorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOriginPatterns("*")  // Permite cualquier origen con http
+                .allowedOrigins("http://localhost:4200", "https://cea0-38-25-28-108.ngrok-free.app")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
+                .allowCredentials(true)
                 .maxAge(3600);
-
-        registry.addMapping("/ws-notifications/**").allowedOrigins("*");
     }
+
 
 
 
