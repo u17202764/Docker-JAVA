@@ -5,9 +5,11 @@ import com.example.demodockerfile.entity.Categoria;
 import com.example.demodockerfile.entity.Producto;
 import com.example.demodockerfile.service.CategoriaService;
 import com.example.demodockerfile.service.ProductoService;
+import com.example.demodockerfile.service.TipoAccion;
 import com.example.demodockerfile.utils.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -37,33 +39,46 @@ public class ControllerPrivate {
             return ResponseResult.error("El nombre de la categoria no debe ser vacio", HttpStatus.BAD_REQUEST);
         }
         Categoria nuevaCategoria = categoriaService.guardar(categoria);
-        notificationService.sentNotificationSocket(categoria);
+        notificationService.sentNotificationSocket(nuevaCategoria, TipoAccion.AGREGAR);
 
         return ResponseResult.success("Categoria creada", nuevaCategoria, HttpStatus.CREATED);
     }
-      
+
 
 
     @GetMapping("/listadoCategoria")
     public ResponseEntity listado() {
         log.info("Listando categorias");
         List<Categoria> listado = (List<Categoria>) categoriaService.listar();
+
         if (listado.isEmpty()) {
             return ResponseResult.success("No hay categorias", null, HttpStatus.NOT_FOUND);
         }
         return ResponseResult.success("Listado de categorias", listado, HttpStatus.OK);
     }
+    @Value("${url.imagenes}") // configurable desde application.properties
+    private String urlImagenes;
 
     @GetMapping("/listarProducto")
-    public ResponseEntity listarProducto() {
+    public ResponseEntity<?> listarProducto() {
         log.info("Listando productos");
+
         List<Producto> listado = (List<Producto>) productoService.listar();
 
+        listado.forEach(p -> {
+            // Si la imagen no está seteada, asigna la imagen por defecto
+            if (p.getImagen() == null || p.getImagen().isBlank()) {
+                p.setImagen(urlImagenes + "default.png");
+            }
+        });
+
         if (listado.isEmpty()) {
-            return ResponseResult.success("No hay producto ", null, HttpStatus.NOT_FOUND);
+            return ResponseResult.success("No hay producto", null, HttpStatus.NOT_FOUND);
         }
+
         return ResponseResult.success("Listado de producto", listado, HttpStatus.OK);
     }
+
 
     @PostMapping("/guardarProducto")
     public ResponseEntity<?> guardar(@ModelAttribute Producto producto,
