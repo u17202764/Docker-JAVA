@@ -4,6 +4,7 @@ import aj.org.objectweb.asm.Opcodes;
 import com.example.demodockerfile.entity.Categoria;
 import com.example.demodockerfile.service.repository.CategoriaRepositorio;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -41,8 +42,11 @@ public class CategoriaService {
         return categoriaRepositorio.findByNombre(nombre);
     }
 
-    public Pageable obtenerPaginacion(int page, int size) {
-        return PageRequest.of(page, size);
+    public Page<Categoria> listarPaginado(int page, int size,String sortCampo , boolean sortOrden) {
+        Pageable pageable = PageRequest.of(page, size,
+                sortOrden ? org.springframework.data.domain.Sort.by(sortCampo).ascending() : org.springframework.data.domain.Sort.by(sortCampo).descending());
+
+        return categoriaRepositorio.findAll(pageable);
     }
 
 

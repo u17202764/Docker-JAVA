@@ -17,5 +17,7 @@ public class Categoria {
     @Column(unique = true, nullable = false)
     private String nombre;
 
+    private boolean activo;
+
 
 }

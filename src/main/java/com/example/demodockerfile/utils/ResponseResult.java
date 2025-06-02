@@ -2,6 +2,7 @@ package com.example.demodockerfile.utils;
 
 import lombok.Builder;
 import lombok.Getter;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -30,4 +31,8 @@ public class ResponseResult<T> {
 
         return ResponseEntity.status(status).body(result);
     }
+
+
+
+
 }

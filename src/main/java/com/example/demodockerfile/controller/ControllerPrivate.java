@@ -10,6 +10,7 @@ import com.example.demodockerfile.utils.ResponseResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,8 +34,8 @@ public class ControllerPrivate {
 
     @PostMapping("/crearCategoria")
     public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
-        String tipoCreacion= categoria.getId() == null ? "nuevo" : "actualizada";
-       log.info("TIPO DE CREACION DE CATEGORIA: {}", tipoCreacion);
+        String tipoCreacion = categoria.getId() == null ? "nuevo" : "actualizada";
+        log.info("TIPO DE CREACION DE CATEGORIA: {}", tipoCreacion);
         if (categoria.getNombre() == null || categoria.getNombre().isEmpty()) {
             return ResponseResult.error("El nombre de la categoria no debe ser vacio", HttpStatus.BAD_REQUEST);
         }
@@ -43,7 +44,7 @@ public class ControllerPrivate {
         }
         Categoria nuevaCategoria = categoriaService.guardar(categoria);
         notificationService.sentNotificationSocket(nuevaCategoria, TipoAccion.AGREGAR);
-        return ResponseResult.success("Categoria "+tipoCreacion, nuevaCategoria, HttpStatus.CREATED);
+        return ResponseResult.success("Categoria " + tipoCreacion, nuevaCategoria, HttpStatus.CREATED);
     }
 
     @GetMapping("/buscarCategoria/{id}")
@@ -56,34 +57,55 @@ public class ControllerPrivate {
         return ResponseResult.success("Categoria encontrada", categoria.get(), HttpStatus.OK);
     }
 
-   @DeleteMapping("/eliminarCategoria/{id}")
+    @DeleteMapping("/eliminarCategoria/{id}")
     public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
-         log.info("Eliminando categoria con id: {}", id);
-         Optional<Categoria> categoria = categoriaService.buscarPorId(id);
-         if (categoria.isEmpty()) {
-             return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
-         }
-         categoriaService.eliminar(id);
-          notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
-         return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
-     }
-
-
-
-    @GetMapping("/listadoCategoria")
-     public ResponseEntity<?> listarCategoria(@RequestParam(value = "page", defaultValue = "0") Integer page,
-                                              @RequestParam(value = "size", defaultValue = "10") Integer size) {
-        log.info("Listando categorias");
-        List<Categoria> listado = (List<Categoria>) categoriaService.obtenerPaginacion(page, size);
-
-        if (listado.isEmpty()) {
-            return ResponseResult.success("No hay categorias", null, HttpStatus.NOT_FOUND);
+        log.info("Eliminando categoria con id: {}", id);
+        Optional<Categoria> categoria = categoriaService.buscarPorId(id);
+        if (categoria.isEmpty()) {
+            return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
         }
-        return ResponseResult.success("Listado de categorias", listado, HttpStatus.OK);
-     }
+        categoriaService.eliminar(id);
+        notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
+        return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
+    }
 
+    @GetMapping("/listarCategoria")
+    public ResponseEntity<?> listarCategorias() {
+        log.info("Listando todas las categorías");
+        List<Categoria> categorias = (List<Categoria>) categoriaService.listar();
+        if (categorias.isEmpty()) {
+            return ResponseResult.success("No hay categorías disponibles", null, HttpStatus.NOT_FOUND);
+        }
+        log.info("Categorías encontradas: {}", categorias);
+        return ResponseResult.success("Listado de categorías", categorias, HttpStatus.OK);
+    }
 
+    @GetMapping("/listadoCategorias")
+    public ResponseEntity<?> listarCategorias(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "sortCampo", defaultValue = "id") String sortCampo,
+            @RequestParam(value = "sortOrden")  boolean sortOrden) {
 
+        log.info("Listando categorías - página: {}, tamaño: {}", page, size);
+
+        Page<Categoria> categorias = categoriaService.listarPaginado(page, size, sortCampo, sortOrden );
+
+        if (categorias == null || categorias.isEmpty()) {
+            log.warn("No se encontraron categorías en la página {} con tamaño {}", page, size);
+            return ResponseResult.success("No hay categorías disponibles", null, HttpStatus.NOT_FOUND);
+        }
+        log.info("Categorías encontradas: {}", categorias.getContent());
+        log.info("Página actual: {}, Total de páginas: {}, Tamaño de página: {}", categorias.getNumber(), categorias.getTotalPages(), categorias.getSize());
+        log.info("Número de elementos en la página: {}", categorias.getNumberOfElements());
+        log.info("Total de elementos: {}", categorias.getTotalElements());
+        log.info("Número de la página solicitada: {}", page);
+        log.info("Tamaño de la página solicitada: {}", size);
+        log.info("Total de páginas: {}", categorias.getTotalPages());
+        log.info("Número de elementos en la página: {}", categorias.getNumberOfElements());
+
+        return ResponseResult.success("Listado de categorías", categorias, HttpStatus.OK);
+    }
 
 
     @Value("${url.imagenes}") // configurable desde application.properties
