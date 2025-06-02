@@ -30,20 +30,32 @@ public class ControllerPrivate {
     @Autowired
     private NotificationService notificationService;
 
+
+
     @PostMapping("/crearCategoria")
     public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
-        log.info("Creando categoria: {}", categoria);
-        if (categoria.getId() != null) {
-            return ResponseResult.error("El id de la categoria no debe ser enviado", HttpStatus.BAD_REQUEST);
-        }
+        String tipoCreacion= categoria.getId() == null ? "nuevo" : "actualizada";
+       log.info("TIPO DE CREACION DE CATEGORIA: {}", tipoCreacion);
         if (categoria.getNombre() == null || categoria.getNombre().isEmpty()) {
             return ResponseResult.error("El nombre de la categoria no debe ser vacio", HttpStatus.BAD_REQUEST);
         }
         Categoria nuevaCategoria = categoriaService.guardar(categoria);
         notificationService.sentNotificationSocket(nuevaCategoria, TipoAccion.AGREGAR);
-
         return ResponseResult.success("Categoria creada", nuevaCategoria, HttpStatus.CREATED);
     }
+
+    @GetMapping("/buscarCategoria/{id}")
+    public ResponseEntity<?> buscarCategoria(@PathVariable Integer id) {
+        log.info("Buscando categoria con id: {}", id);
+        Optional<Categoria> categoria = categoriaService.buscarPorId(id);
+        if (categoria.isEmpty()) {
+            return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
+        }
+        return ResponseResult.success("Categoria encontrada", categoria.get(), HttpStatus.OK);
+    }
+
+
+
 
      @DeleteMapping("/eliminarCategoria/{id}")
     public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
