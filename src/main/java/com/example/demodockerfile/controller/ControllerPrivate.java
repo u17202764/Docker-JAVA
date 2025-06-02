@@ -31,7 +31,6 @@ public class ControllerPrivate {
     private NotificationService notificationService;
 
 
-
     @PostMapping("/crearCategoria")
     public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
         String tipoCreacion= categoria.getId() == null ? "nuevo" : "actualizada";
@@ -39,9 +38,12 @@ public class ControllerPrivate {
         if (categoria.getNombre() == null || categoria.getNombre().isEmpty()) {
             return ResponseResult.error("El nombre de la categoria no debe ser vacio", HttpStatus.BAD_REQUEST);
         }
+        if (categoriaService.buscarPorNombre(categoria.getNombre()).isPresent()) {
+            return ResponseResult.error("Ya existe una categoria con el nombre " + categoria.getNombre(), HttpStatus.BAD_REQUEST);
+        }
         Categoria nuevaCategoria = categoriaService.guardar(categoria);
         notificationService.sentNotificationSocket(nuevaCategoria, TipoAccion.AGREGAR);
-        return ResponseResult.success("Categoria creada", nuevaCategoria, HttpStatus.CREATED);
+        return ResponseResult.success("Categoria "+tipoCreacion, nuevaCategoria, HttpStatus.CREATED);
     }
 
     @GetMapping("/buscarCategoria/{id}")
@@ -54,10 +56,7 @@ public class ControllerPrivate {
         return ResponseResult.success("Categoria encontrada", categoria.get(), HttpStatus.OK);
     }
 
-
-
-
-     @DeleteMapping("/eliminarCategoria/{id}")
+   @DeleteMapping("/eliminarCategoria/{id}")
     public ResponseEntity<?> eliminarCategoria(@PathVariable Integer id) {
          log.info("Eliminando categoria con id: {}", id);
          Optional<Categoria> categoria = categoriaService.buscarPorId(id);
@@ -69,16 +68,24 @@ public class ControllerPrivate {
          return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
      }
 
+
+
     @GetMapping("/listadoCategoria")
-    public ResponseEntity listado() {
+     public ResponseEntity<?> listarCategoria(@RequestParam(value = "page", defaultValue = "0") Integer page,
+                                              @RequestParam(value = "size", defaultValue = "10") Integer size) {
         log.info("Listando categorias");
-        List<Categoria> listado = (List<Categoria>) categoriaService.listar();
+        List<Categoria> listado = (List<Categoria>) categoriaService.obtenerPaginacion(page, size);
 
         if (listado.isEmpty()) {
             return ResponseResult.success("No hay categorias", null, HttpStatus.NOT_FOUND);
         }
         return ResponseResult.success("Listado de categorias", listado, HttpStatus.OK);
-    }
+     }
+
+
+
+
+
     @Value("${url.imagenes}") // configurable desde application.properties
     private String urlImagenes;
 
