@@ -85,24 +85,20 @@ public class ControllerPrivate {
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortCampo", defaultValue = "id") String sortCampo,
-            @RequestParam(value = "sortOrden")  boolean sortOrden) {
+            @RequestParam(value = "sortOrden", required = false ) boolean sortOrden,
+            @RequestParam(value = "searchType", required = false) String searchType,
+            @RequestParam(value = "searchValue", required = false) String searchValue,
+            @RequestParam(value = "searchValueExact", required = false ) boolean searchValueExact) {
 
         log.info("Listando categorías - página: {}, tamaño: {}", page, size);
 
-        Page<Categoria> categorias = categoriaService.listarPaginado(page, size, sortCampo, sortOrden );
+        Page<Categoria> categorias = categoriaService.listarPaginado(page, size, sortCampo, sortOrden, searchType, searchValue, searchValueExact);
 
         if (categorias == null || categorias.isEmpty()) {
             log.warn("No se encontraron categorías en la página {} con tamaño {}", page, size);
             return ResponseResult.success("No hay categorías disponibles", null, HttpStatus.NOT_FOUND);
         }
         log.info("Categorías encontradas: {}", categorias.getContent());
-        log.info("Página actual: {}, Total de páginas: {}, Tamaño de página: {}", categorias.getNumber(), categorias.getTotalPages(), categorias.getSize());
-        log.info("Número de elementos en la página: {}", categorias.getNumberOfElements());
-        log.info("Total de elementos: {}", categorias.getTotalElements());
-        log.info("Número de la página solicitada: {}", page);
-        log.info("Tamaño de la página solicitada: {}", size);
-        log.info("Total de páginas: {}", categorias.getTotalPages());
-        log.info("Número de elementos en la página: {}", categorias.getNumberOfElements());
 
         return ResponseResult.success("Listado de categorías", categorias, HttpStatus.OK);
     }
