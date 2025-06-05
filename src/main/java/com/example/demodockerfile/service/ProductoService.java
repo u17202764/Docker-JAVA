@@ -24,6 +24,10 @@ public class ProductoService {
         return productoRepositorio.findAll();
     }
 
+    public boolean existeCategoria(Integer categoriaId) {
+        return productoRepositorio.existsByCategoria_Id(categoriaId);
+    }
+
     @Transactional
     public Producto guardar(Producto producto, MultipartFile file) {
         try {

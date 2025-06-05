@@ -30,7 +30,7 @@ public class Producto {
     @Column(name = "stock")
     private int stock;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
 }

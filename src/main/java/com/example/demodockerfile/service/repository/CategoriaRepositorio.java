@@ -15,4 +15,6 @@ public interface CategoriaRepositorio extends JpaRepository<Categoria, Integer> 
     Optional<Categoria> findByNombre(String nombre);
 
     Page<Categoria> findAll(Specification<Categoria> spec, Pageable pageable);
+
+
 }

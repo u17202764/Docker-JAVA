@@ -64,6 +64,10 @@ public class ControllerPrivate {
         if (categoria.isEmpty()) {
             return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
         }
+        if(productoService.existeCategoria(id)) {
+            return ResponseResult.error("No se puede eliminar la categoría porque tiene productos asociados ", HttpStatus.BAD_REQUEST);
+        }
+
         categoriaService.eliminar(id);
         notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
         return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
