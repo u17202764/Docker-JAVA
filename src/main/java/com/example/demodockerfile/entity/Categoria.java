@@ -1,5 +1,6 @@
 package com.example.demodockerfile.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,7 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "productos")
 public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,5 +23,6 @@ public class Categoria {
     private boolean activo;
 
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore // <- Añadir esto
     private List<Producto> productos = new ArrayList<>();
 }
