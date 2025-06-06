@@ -9,6 +9,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -19,7 +20,7 @@ import java.util.Optional;
 public class CategoriaService {
     @Autowired
     private CategoriaRepositorio categoriaRepositorio;
-
+    @Transactional(readOnly = true)
     public Iterable<Categoria> listar() {
         return categoriaRepositorio.findAll();
     }
@@ -27,7 +28,6 @@ public class CategoriaService {
     public Optional<Categoria> buscarPorId(Integer id) {
         return categoriaRepositorio.findById(id);
     }
-
 
 
     public Categoria guardar(Categoria categoria) {
@@ -47,11 +47,11 @@ public class CategoriaService {
         return categoriaRepositorio.findByNombre(nombre);
     }
 
-    public Page<Categoria> listarPaginado(int page, int size, String sortCampo, boolean sortOrden, String searchType, String searchValue,boolean searchValueExact) {
+    public Page<Categoria> listarPaginado(int page, int size, String sortCampo, boolean sortOrden, String searchType, String searchValue, boolean searchValueExact) {
         Pageable pageable = PageRequest.of(page, size,
                 sortOrden ? org.springframework.data.domain.Sort.by(sortCampo).ascending() : org.springframework.data.domain.Sort.by(sortCampo).descending());
 
-        Specification<Categoria> spec = buildSpecification(searchType, searchValue,searchValueExact);
+        Specification<Categoria> spec = buildSpecification(searchType, searchValue, searchValueExact);
 
         return categoriaRepositorio.findAll(spec, pageable);
 
@@ -59,7 +59,7 @@ public class CategoriaService {
 
     private static final List<String> CAMPOS_FILTRABLES = List.of("id", "nombre", "activo");
 
-    private Specification<Categoria> buildSpecification(String searchType, String searchValue,boolean searchValueExact) {
+    private Specification<Categoria> buildSpecification(String searchType, String searchValue, boolean searchValueExact) {
         return (root, query, cb) -> {
             if (isBlank(searchType) || isBlank(searchValue)) {
                 return cb.conjunction();

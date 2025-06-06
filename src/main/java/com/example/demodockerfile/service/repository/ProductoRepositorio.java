@@ -9,5 +9,5 @@ import java.util.Optional;
 
 public interface ProductoRepositorio extends CrudRepository<Producto, Integer> {
     Optional<Producto> findByNombre(String nombre);
-    boolean existsByCategoria_Id(Integer categoriaId);
+  //  boolean existsByCategoria_Id(Integer categoriaId);
 }

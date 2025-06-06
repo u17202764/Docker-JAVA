@@ -1,5 +1,6 @@
 package com.example.demodockerfile.controller;
 
+import com.example.demodockerfile.ProductoDTO;
 import com.example.demodockerfile.service.NotificationService;
 import com.example.demodockerfile.entity.Categoria;
 import com.example.demodockerfile.entity.Producto;
@@ -87,10 +88,12 @@ public class ControllerPrivate {
         if (categoria.isEmpty()) {
             return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
         }
-        if(productoService.existeCategoria(id)) {
+      /*  if(productoService.existeCategoria(id)) {
           categoriaService.eliminar(id);
           return ResponseResult.error("Se eliminar la categoría y productos asociados", HttpStatus.BAD_REQUEST);
         }
+
+       */
         categoriaService.eliminar(id);
         return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
     }
@@ -137,21 +140,16 @@ public class ControllerPrivate {
     public ResponseEntity<?> listarProducto() {
         log.info("Listando productos");
 
-        List<Producto> listado = (List<Producto>) productoService.listar();
-
-        listado.forEach(p -> {
-            // Si la imagen no está seteada, asigna la imagen por defecto
-            if (p.getImagen() == null || p.getImagen().isBlank()) {
-                p.setImagen(urlImagenes + "default.png");
-            }
-        });
-
-        if (listado.isEmpty()) {
-            return ResponseResult.success("No hay producto", null, HttpStatus.NOT_FOUND);
+        List<ProductoDTO> listado =   productoService.listarProductos();
+        if (listado == null || listado.isEmpty()) {
+            log.warn("No se encontraron productos");
+            return ResponseResult.success("No hay productos disponibles", null, HttpStatus.NOT_FOUND);
         }
-
         return ResponseResult.success("Listado de producto", listado, HttpStatus.OK);
     }
+
+
+
 
 
     @PostMapping("/guardarProducto")
@@ -180,7 +178,7 @@ public class ControllerPrivate {
         if (producto.getPrecio() == null || producto.getPrecio() <= 0) {
             return ResponseResult.error("Precio obligatorio", HttpStatus.BAD_REQUEST);
         }
-        Producto productoGuardado = productoService.guardar(producto, img);
+        Producto productoGuardado = productoService.guardar(producto);
         if (productoGuardado == null) {
             return ResponseResult.error("Error al guardar el producto", HttpStatus.INTERNAL_SERVER_ERROR);
         }

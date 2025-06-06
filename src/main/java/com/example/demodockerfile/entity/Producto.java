@@ -4,36 +4,31 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "productoXD1")
-@AllArgsConstructor
-@NoArgsConstructor
+@Table(name = "producto")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@ToString(exclude = "categoria")
+@ToString(exclude = "categoria") // Evita problemas de recursión al imprimir la categoría
 public class Producto {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_producto")
     private Integer idProducto;
 
-    @Column(name = "nombre", nullable = false, length = 150)
+    @Column(nullable = false, length = 150)
     private String nombre;
 
-    @Column(name = "imagen", length = 255)
+    @Column(length = 255)
     private String imagen;
 
-    @Column(name = "precio", nullable = false)
+    @Column(nullable = false)
     private Double precio;
 
-    @Column(name = "stock")
     private int stock;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-
-    @JoinColumn(name = "id_categoria", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY ) // Relación Many-to-One con Categoria
+    @JoinColumn(name = "categoria_id") // Columna en la tabla Producto que almacena la clave foránea
     private Categoria categoria;
-
-
 }
