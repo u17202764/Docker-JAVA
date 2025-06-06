@@ -34,17 +34,40 @@ public class ControllerPrivate {
 
     @PostMapping("/crearCategoria")
     public ResponseEntity<?> crearCategoria(@RequestBody Categoria categoria) {
-        String tipoCreacion = categoria.getId() == null ? "nuevo" : "actualizada";
-        log.info("TIPO DE CREACION DE CATEGORIA: {}", tipoCreacion);
-        if (categoria.getNombre() == null || categoria.getNombre().isEmpty()) {
-            return ResponseResult.error("El nombre de la categoria no debe ser vacio", HttpStatus.BAD_REQUEST);
+        if (categoria.getNombre() == null || categoria.getNombre().trim().isEmpty()) {
+            return ResponseResult.error("El nombre de la categoría no debe estar vacío", HttpStatus.BAD_REQUEST);
         }
-        if (categoriaService.buscarPorNombre(categoria.getNombre()).isPresent()) {
-            return ResponseResult.error("Ya existe una categoria con el nombre " + categoria.getNombre(), HttpStatus.BAD_REQUEST);
+
+        boolean esCreacion = categoria.getId() == null;
+        Optional<Categoria> categoriaExistente = categoriaService.buscarPorNombre(categoria.getNombre());
+
+        if (esCreacion) {
+            if (categoriaExistente.isPresent()) {
+                log.warn("Ya existe una categoría con el nombre: {}", categoria.getNombre());
+                return ResponseResult.error("Ya existe una categoría con el nombre " + categoria.getNombre(), HttpStatus.BAD_REQUEST);
+            }
+        } else {
+            // Es actualización, verificamos si el nombre ya lo tiene otra categoría distinta
+            Optional<Categoria> actual = categoriaService.buscarPorId(categoria.getId());
+            if (actual.isEmpty()) {
+                return ResponseResult.error("No se encontró la categoría con ID " + categoria.getId(), HttpStatus.NOT_FOUND);
+            }
+
+            boolean nombreCambio = !actual.get().getNombre().equalsIgnoreCase(categoria.getNombre());
+
+            if (nombreCambio && categoriaExistente.isPresent() &&
+                    !categoriaExistente.get().getId().equals(categoria.getId())) {
+                log.warn("El nombre '{}' ya está en uso por otra categoría", categoria.getNombre());
+                return ResponseResult.error("Ya existe otra categoría con el nombre " + categoria.getNombre(), HttpStatus.BAD_REQUEST);
+            }
+
+            log.info("Actualizando categoría ID {} con datos: {}", categoria.getId(), categoria);
         }
-        Categoria nuevaCategoria = categoriaService.guardar(categoria);
-        notificationService.sentNotificationSocket(nuevaCategoria, TipoAccion.AGREGAR);
-        return ResponseResult.success("Categoria " + tipoCreacion, nuevaCategoria, HttpStatus.CREATED);
+
+        Categoria guardada = categoriaService.guardar(categoria);
+
+        return ResponseResult.success("Categoría " + (esCreacion ? "creada" : "actualizada"), guardada,
+                esCreacion ? HttpStatus.CREATED : HttpStatus.OK);
     }
 
     @GetMapping("/buscarCategoria/{id}")
@@ -65,11 +88,10 @@ public class ControllerPrivate {
             return ResponseResult.error("No existe categoria con el id " + id, HttpStatus.NOT_FOUND);
         }
         if(productoService.existeCategoria(id)) {
-            return ResponseResult.error("No se puede eliminar la categoría porque tiene productos asociados ", HttpStatus.BAD_REQUEST);
+          categoriaService.eliminar(id);
+          return ResponseResult.error("Se eliminar la categoría y productos asociados", HttpStatus.BAD_REQUEST);
         }
-
         categoriaService.eliminar(id);
-        notificationService.sentNotificationSocket(categoria.orElse(null), TipoAccion.ELIMINAR);
         return ResponseResult.success("Categoria eliminada", null, HttpStatus.NO_CONTENT);
     }
 

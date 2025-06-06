@@ -31,6 +31,9 @@ public class Producto {
     private int stock;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
+
     @JoinColumn(name = "id_categoria", nullable = false)
     private Categoria categoria;
+
+
 }
