@@ -1,6 +1,8 @@
 package com.example.demodockerfile.config_app;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,12 +26,15 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
     private final JwtFilter jwtFilter;
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationEntryPoint authenticationEntryPoint;
     private final JwtAccessDeniedHandler accessDeniedHandler;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        log.info("Configurando seguridad HTTP para la aplicación");
         return http
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors
@@ -41,6 +46,7 @@ public class SecurityConfig {
                             corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                             corsConfig.setAllowedHeaders(List.of("*")); // O especifica headers como "Content-Type", "Authorization"
                             corsConfig.setAllowCredentials(true); // Importante si usas cookies o Authorization header
+                            corsConfig.setExposedHeaders(List.of("Authorization")); // 👈 Esto permite que Angular lo lea
                             return corsConfig;
                         })
                 )
