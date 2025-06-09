@@ -38,7 +38,7 @@ import static com.example.demodockerfile.validation_error.ValidationException.la
 @Slf4j
 public class AuthService implements UserDetailsService {
 
-    private JwtServiceImpl jwtService;
+    private final JwtServiceImpl jwtService;
     private final UserRepository userRepository;
     private final ClienteRepository clienteRepository;
     private final LoginLogRepository loginLogRepository;
@@ -56,16 +56,16 @@ public class AuthService implements UserDetailsService {
     public String session(LoginDTO loginDTO) {
         UserDetails user = loadUserByUsername(loginDTO.getCorreo());
 
-        if (!new BCryptPasswordEncoder().matches(loginDTO.getClave(), user.getPassword())) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+        if (!passwordEncoder.matches(loginDTO.getClave(), user.getPassword())) {
+            log.warn("Credenciales incorrectas para usuario: {}", loginDTO.getCorreo());
             throw new BadCredentialsException("Credenciales incorrectas");
         }
-
-       /* ClienteEntity cliente = clienteRepository.findByUserCorreo(loginDTO.getCorreo()).get();
-
+        ClienteEntity cliente = clienteRepository.findByUserCorreoFetchUser(loginDTO.getCorreo()).get();
         if (cliente == null) {
-            lanzarError(HttpStatus.NOT_FOUND, "Cliente no encontrado", "No se encontró un cliente asociado a este usuario.");
+            lanzarError(HttpStatus.NOT_FOUND, "Usuario no encontrado", "El usuario no está registrado.");
         }
-
         if (cliente.getEstado() != EstadoCliente.ACTIVO) {
             lanzarError(HttpStatus.FORBIDDEN, "Cuenta inactiva", "La cuenta está inactiva. Contacte al administrador.");
         }
@@ -83,7 +83,6 @@ public class AuthService implements UserDetailsService {
         LoginLogEntity logss = loginLogRepository.save(loginLog);
         log.info("Login log guardado: {}", logss);
 
-        */
         return jwtService.generateToken(user);
     }
 

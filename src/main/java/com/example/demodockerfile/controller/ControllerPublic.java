@@ -49,10 +49,12 @@ public class ControllerPublic {
             headers.add("Authorization", "Bearer " + token);
             return ResponseResult.of("Inicio de sesión exitoso", null, HttpStatus.OK, headers);
 
-        } catch (BadCredentialsException e) {
-            log.warn("Credenciales incorrectas para usuario: {}", loginDTO.getCorreo());
-            lanzarError(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas", "Por favor, verifica tu correo y contraseña.");
-          return ResponseResult.of("Credenciales incorrectas", null, HttpStatus.UNAUTHORIZED);
+        }  catch (BadCredentialsException e) {
+            log.error("Error de credenciales: {}", e.getMessage());
+            return ResponseResult.of("Credenciales inválidas", null, HttpStatus.UNAUTHORIZED);
+        } catch (Exception e) {
+            log.error("Error al iniciar sesión: {}", e.getMessage());
+            return ResponseResult.of("Error al iniciar sesión", null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

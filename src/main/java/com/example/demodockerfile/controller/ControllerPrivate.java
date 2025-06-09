@@ -1,12 +1,17 @@
 package com.example.demodockerfile.controller;
 
 import com.example.demodockerfile.dto.ProductoDTO;
+import com.example.demodockerfile.entity.ClienteEntity;
+import com.example.demodockerfile.entity.UserEntity;
 import com.example.demodockerfile.service.NotificationService;
 import com.example.demodockerfile.entity.Categoria;
 import com.example.demodockerfile.entity.Producto;
 import com.example.demodockerfile.service.CategoriaService;
 import com.example.demodockerfile.service.ProductoService;
 import com.example.demodockerfile.utils.ResponseResult;
+import com.example.demodockerfile.utils.jwt.repository.ClienteRepository;
+import com.example.demodockerfile.utils.jwt.repository.UserRepository;
+import com.example.demodockerfile.utils.jwt.services.JwtServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,10 +42,30 @@ public class ControllerPrivate {
     private NotificationService notificationService;
 
 
+    @Autowired
+    private ClienteRepository clienteRepository;
+
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/ver/info")
     public ResponseEntity<?> verUsuario() {
         return ResponseResult.of("Información del usuario", null, HttpStatus.OK);
+    }
+
+    @GetMapping("/v1/cliente/token")
+    public ResponseEntity<?> verPerfilUser() {
+
+        String correo = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        log.info("Consultando perfil para el correo: {}", correo);
+
+        Optional<ClienteEntity> clienteOpt = clienteRepository.findByUserCorreoFetchUser(correo);
+        clienteOpt.get().getUser().setPassword("*********"); // No enviar la clave en la respuesta
+        if (clienteOpt.isEmpty()) {
+            lanzarError(HttpStatus.NOT_FOUND, "No existe cliente con el correo " + correo,
+                    "No se encontró el cliente con el correo proporcionado");
+        }
+        return ResponseResult.of("Perfil del usuario", clienteOpt, HttpStatus.OK);
     }
 
 
