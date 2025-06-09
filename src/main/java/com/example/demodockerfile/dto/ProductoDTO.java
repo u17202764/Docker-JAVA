@@ -15,7 +15,7 @@ public class ProductoDTO {
     public ProductoDTO(Producto producto) {
         this.idProducto = producto.getIdProducto();
         this.nombre = producto.getNombre();
-        this.imagen = producto.getImagen();
+    z
         this.precio = producto.getPrecio();
         this.stock = producto.getStock();
         this.categoriaNombre = producto.getCategoria().getNombre(); // esto funciona dentro de la transacción

@@ -10,7 +10,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = "categoria") // Evita problemas de recursión al imprimir la categoría
+@ToString
 public class Producto {
 
     @Id

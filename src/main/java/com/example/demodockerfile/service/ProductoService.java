@@ -33,21 +33,17 @@ public class ProductoService {
     }
 
 
-
 //    public boolean existeCategoria(Integer categoriaId) {
 //        return productoRepositorio.existsByCategoria_Id(categoriaId);
 //    }
 
-    @Transactional
+
     public Producto guardar(Producto producto) {
-        try {
 
-            return productoRepositorio.save(producto);
 
-        } catch (Exception e) {
-            log.error("Error al guardar el producto", e);
-            throw new RuntimeException("Error al guardar el producto", e);
-        }
+        return productoRepositorio.save(producto);
+
+
     }
 
 

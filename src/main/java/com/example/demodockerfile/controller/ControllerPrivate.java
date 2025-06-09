@@ -193,8 +193,7 @@ public class ControllerPrivate {
 
 
     @PostMapping("/guardarProducto")
-    public ResponseEntity<?> guardar(@ModelAttribute Producto producto,
-                                     @RequestParam(value = "img", required = false) MultipartFile img) {
+    public ResponseEntity<?> guardar(@ModelAttribute Producto producto ) {
         log.info("Guardando producto: {}", producto);
         if (producto.getIdProducto() != null) {
             lanzarError(HttpStatus.BAD_REQUEST, "El id del producto no debe ser enviado",
