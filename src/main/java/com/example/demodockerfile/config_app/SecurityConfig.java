@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 @Configuration
 @EnableWebSecurity
@@ -30,6 +32,19 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors
+                        .configurationSource(request -> {
+                            var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                            corsConfig.setAllowedOriginPatterns(List.of("*")); // Para desarrollo, permite todos los orígenes
+                            // En producción usa: List.of("http://tufrontend.com")
+
+                            corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                            corsConfig.setAllowedHeaders(List.of("*")); // O especifica headers como "Content-Type", "Authorization"
+                            corsConfig.setAllowCredentials(true); // Importante si usas cookies o Authorization header
+                            return corsConfig;
+                        })
+                )
+                .formLogin(form -> form.disable()) // Deshabilita el formulario de login por defectos
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(authenticationEntryPoint) // 401
                         .accessDeniedHandler(accessDeniedHandler)           // 403
