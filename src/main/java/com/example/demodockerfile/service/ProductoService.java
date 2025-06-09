@@ -1,6 +1,6 @@
 package com.example.demodockerfile.service;
 
-import com.example.demodockerfile.ProductoDTO;
+import com.example.demodockerfile.dto.ProductoDTO;
 import com.example.demodockerfile.entity.Producto;
 import com.example.demodockerfile.service.repository.ProductoRepositorio;
 import lombok.extern.slf4j.Slf4j;

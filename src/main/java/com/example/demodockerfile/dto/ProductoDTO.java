@@ -1,4 +1,4 @@
-package com.example.demodockerfile;
+package com.example.demodockerfile.dto;
 
 import com.example.demodockerfile.entity.Producto;
 import lombok.Data;
