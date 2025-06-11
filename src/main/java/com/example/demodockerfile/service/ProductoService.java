@@ -3,8 +3,14 @@ package com.example.demodockerfile.service;
 import com.example.demodockerfile.dto.ProductoDTO;
 import com.example.demodockerfile.entity.Producto;
 import com.example.demodockerfile.service.repository.ProductoRepositorio;
+import com.example.demodockerfile.utils.SearchDTO;
+import com.example.demodockerfile.utils.SearchOperation;
+import com.example.demodockerfile.utils.SortDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,6 +20,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static com.example.demodockerfile.validation_error.ValidationException.lanzarError;
+import static org.apache.logging.log4j.util.Strings.isBlank;
 
 @Slf4j
 @Service
@@ -33,17 +42,8 @@ public class ProductoService {
     }
 
 
-//    public boolean existeCategoria(Integer categoriaId) {
-//        return productoRepositorio.existsByCategoria_Id(categoriaId);
-//    }
-
-
     public Producto guardar(Producto producto) {
-
-
         return productoRepositorio.save(producto);
-
-
     }
 
 
@@ -67,5 +67,108 @@ public class ProductoService {
             log.error("Error al eliminar el producto", e);
             throw new RuntimeException("Error al eliminar el producto", e);
         }
+    }
+    public List<Producto> litadoProducto() {
+        return (List<Producto>) productoRepositorio.findAll();
+    }
+    public Page<ProductoDTO> listarPaginado(int page, int size, SortDTO sortDTO, SearchDTO searchDTO) {
+
+        Pageable pageable = construirPageable(page, size, sortDTO);
+
+        Specification<Producto> spec = buildSpecification(searchDTO);
+
+        Page<Producto> productos = productoRepositorio.findAll(spec, pageable);
+
+        List<ProductoDTO> productosDto = productos.stream()
+                .map(this::mapToDto)
+                .toList();
+
+        return new PageImpl<>(productosDto, pageable, productos.getTotalElements());
+    }
+
+    private String obtenerCampoOrdenamiento(SortDTO sortDTO) {
+        log.info("Obteniendo campo de ordenamiento desde SortDTO: {}", sortDTO);
+        final String CAMPO_POR_DEFECTO = "nombre";
+        String sortField = Optional.ofNullable(sortDTO)
+                .map(SortDTO::getSortField)
+                .filter(field -> !field.isBlank())
+                .orElse(CAMPO_POR_DEFECTO);
+
+        if (!CAMPOS_FILTRABLES.contains(sortField)) {
+            log.warn("Campo '{}' no permitido para ordenamiento.", sortField);
+            lanzarError(HttpStatus.BAD_REQUEST, "Campo no permitido para ordenamiento",
+                    "Los campos permitidos son: " + CAMPOS_FILTRABLES);
+        }
+        return sortField;
+    }
+
+
+
+    private Pageable construirPageable(int page, int size, SortDTO sortDTO) {
+        String sortField = obtenerCampoOrdenamiento(sortDTO);
+        return PageRequest.of(page, size, (sortDTO != null && Boolean.TRUE.equals(sortDTO.isSortDirection()))
+                ? Sort.by(sortField).ascending()
+                : Sort.by(sortField).descending());
+    }
+
+
+    private ProductoDTO mapToDto(Producto producto) {
+        ProductoDTO dto = new ProductoDTO();
+        dto.setIdProducto(producto.getIdProducto());
+        dto.setNombre(producto.getNombre());
+        dto.setPrecio(producto.getPrecio());
+        dto.setStock(producto.getStock());
+        dto.setImagen(producto.getImagen());
+        //  dto.setCategoriaNombre(producto.getCategoria() != null ? producto.getCategoria().getNombre() : null);
+        return dto;
+    }
+
+    private static final List<String> CAMPOS_FILTRABLES = List.of("idProducto","nombre", "precio", "stock");
+
+
+        private Specification<Producto> buildSpecification(SearchDTO searchDTO) {
+           log.info("Construyendo especificación para búsqueda: {}", searchDTO);
+            if ( searchDTO == null || isBlank(searchDTO.getSearchKey()) || isBlank(searchDTO.getSearchValue()) || searchDTO.getSearchOperation() == null) {
+                return (root, query, cb) -> cb.conjunction();
+            }
+            return (root, query, cb) -> {
+                if (!CAMPOS_FILTRABLES.contains(searchDTO.getSearchKey())) {
+                    log.warn("Campo '{}' no permitido  para búsqueda", searchDTO.getSearchKey());
+                    lanzarError(HttpStatus.BAD_REQUEST, " Campo no permitido para búsqueda",
+                            "Los campos permitidos son: " + CAMPOS_FILTRABLES);
+                }
+                if(searchDTO.getSearchOperation() == null) {
+                    log.warn("Operación de búsqueda no especificada  para el campo '{}'", searchDTO.getSearchKey());
+                    lanzarError(HttpStatus.BAD_REQUEST, "Operación de búsqueda no especificada",
+                            "Debes enviar searchOperation, los valores permitidos son: " + SearchOperation.values());
+                }
+                if(isBlank(searchDTO.getSearchValue())) {
+                    log.warn("Valor de búsqueda no especificado  para el campo '{}'", searchDTO.getSearchKey());
+                    lanzarError(HttpStatus.BAD_REQUEST, "Valor de búsqueda no especificado",
+                            "Debes enviar searchValue, el valor no puede estar vacío");
+                }
+
+                switch (searchDTO.getSearchOperation()) {
+                    case INEXACTO:// para texto
+                        return cb.like(root.get(searchDTO.getSearchKey()), "%" + searchDTO.getSearchValue() + "%");
+
+                    case EXACTO: // para texto y números
+                        return cb.equal(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                    case MAYOR:
+                        return cb.greaterThan(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                    case MENOR:
+                        return cb.lessThan(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                    case MAYOR_IGUAL:
+                        return cb.greaterThanOrEqualTo(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                    case MENOR_IGUAL:
+                        return cb.lessThanOrEqualTo(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+
+                    default:
+                        log.info("Operación de búsqueda '{}' no válida, se usará INEXACTO por defecto", searchDTO.getSearchOperation());
+                        lanzarError(HttpStatus.BAD_REQUEST, "Operación de búsqueda no válida",
+                                "Los valores permitidos son: " + SearchOperation.values());
+                }
+                return null;
+            };
     }
 }

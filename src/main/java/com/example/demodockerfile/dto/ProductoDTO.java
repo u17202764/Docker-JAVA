@@ -2,7 +2,9 @@ package com.example.demodockerfile.dto;
 
 import com.example.demodockerfile.entity.Producto;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 @Data
 public class ProductoDTO {
     private Integer idProducto;
@@ -10,15 +12,15 @@ public class ProductoDTO {
     private String imagen;
     private Double precio;
     private int stock;
-    private String categoriaNombre;
+ //   private String categoriaNombre;
 
     public ProductoDTO(Producto producto) {
         this.idProducto = producto.getIdProducto();
         this.nombre = producto.getNombre();
-    z
+        this.imagen = producto.getImagen();
         this.precio = producto.getPrecio();
         this.stock = producto.getStock();
-        this.categoriaNombre = producto.getCategoria().getNombre(); // esto funciona dentro de la transacción
+
     }
 
 

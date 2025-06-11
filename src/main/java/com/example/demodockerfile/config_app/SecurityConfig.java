@@ -51,6 +51,9 @@ public class SecurityConfig {
                         })
                 )
                 .formLogin(form -> form.disable()) // Deshabilita el formulario de login por defectos
+
+
+
                 .exceptionHandling(eh -> eh
                         .authenticationEntryPoint(authenticationEntryPoint) // 401
                         .accessDeniedHandler(accessDeniedHandler)           // 403
