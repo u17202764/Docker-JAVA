@@ -40,9 +40,7 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                            corsConfig.setAllowedOriginPatterns(List.of("*")); // Para desarrollo, permite todos los orígenes
-                            // En producción usa: List.of("http://tufrontend.com")
-
+                            corsConfig.setAllowedOriginPatterns(List.of("*","https://docker-java-lmse.onrender.com")); // Para desarrollo, permite todos los orígenes
                             corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                             corsConfig.setAllowedHeaders(List.of("*")); // O especifica headers como "Content-Type", "Authorization"
                             corsConfig.setAllowCredentials(true); // Importante si usas cookies o Authorization header
@@ -60,7 +58,11 @@ public class SecurityConfig {
                 )
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/public/**").permitAll()
+                        .requestMatchers( "/api/public/**",       // Tu API pública
+                                "/v3/api-docs/**",      // Documentación JSON
+                                "/swagger-ui/**",       // Interfaz Swagger UI
+                                "/swagger-ui.html"      // Acceso clásico (opcional pero recomendado)
+                                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authProvider())
