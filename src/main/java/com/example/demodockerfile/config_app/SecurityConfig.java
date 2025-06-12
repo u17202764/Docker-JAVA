@@ -40,7 +40,7 @@ public class SecurityConfig {
                 .cors(cors -> cors
                         .configurationSource(request -> {
                             var corsConfig = new org.springframework.web.cors.CorsConfiguration();
-                            corsConfig.setAllowedOriginPatterns(List.of("*","https://docker-java-lmse.onrender.com")); // Para desarrollo, permite todos los orígenes
+                            corsConfig.setAllowedOriginPatterns(List.of("*","https://docker-java-lmse.onrender.com/","https://docker-java-lmse.onrender.com")); // Para desarrollo, permite todos los orígenes
                             corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
                             corsConfig.setAllowedHeaders(List.of("*")); // O especifica headers como "Content-Type", "Authorization"
                             corsConfig.setAllowCredentials(true); // Importante si usas cookies o Authorization header
