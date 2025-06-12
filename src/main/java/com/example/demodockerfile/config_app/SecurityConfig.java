@@ -1,5 +1,7 @@
 package com.example.demodockerfile.config_app;
 
+import com.example.demodockerfile.config_app.segurityError.JwtAccessDeniedHandler;
+import com.example.demodockerfile.config_app.segurityError.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

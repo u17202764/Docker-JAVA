@@ -13,6 +13,7 @@ import com.example.demodockerfile.utils.jwt.repository.LoginLogRepository;
 import com.example.demodockerfile.utils.jwt.repository.UserRepository;
 import com.example.demodockerfile.validation_error.ErrorResponseDTO;
 import com.example.demodockerfile.validation_error.ValidationException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
@@ -26,6 +27,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
@@ -50,10 +53,25 @@ public class AuthService implements UserDetailsService {
                 .map(CustomUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado: " + username));
     }
-
+    public HttpServletRequest getCurrentHttpRequest() {
+        ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        return attrs != null ? attrs.getRequest() : null;
+    }
 
     @Transactional
     public String session(LoginDTO loginDTO) {
+        HttpServletRequest request = getCurrentHttpRequest();
+        String ip = "desconocida";
+        if (request != null) {
+            ip = request.getHeader("X-Forwarded-For");
+            if (ip != null && ip.contains(",")) {
+                ip = ip.split(",")[0].trim();
+            }
+            if (ip == null || ip.isEmpty() || "unknown".equalsIgnoreCase(ip)) {
+                ip = request.getRemoteAddr();
+            }
+        }
+
         UserDetails user = loadUserByUsername(loginDTO.getCorreo());
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
@@ -74,10 +92,11 @@ public class AuthService implements UserDetailsService {
 
         log.info("Cliente autenticado: {} {}", cliente.getNombre(), cliente.getApellido());
         log.info("USER {} ", cliente.getUser());
+
         // Registrar log de sesión
         LoginLogEntity loginLog = LoginLogEntity.builder()
                 .user(userEntity)
-                .ip("123") // implementa esta utilidad con Spring
+                .ip(ip) // implementa esta utilidad con Spring
                 .build();
 
         LoginLogEntity logss = loginLogRepository.save(loginLog);

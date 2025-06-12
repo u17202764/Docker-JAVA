@@ -52,7 +52,6 @@ public class CategoriaService {
                 sortOrden ? org.springframework.data.domain.Sort.by(sortCampo).ascending() : org.springframework.data.domain.Sort.by(sortCampo).descending());
 
         Specification<Categoria> spec = buildSpecification(searchType, searchValue, searchValueExact);
-
         return categoriaRepositorio.findAll(spec, pageable);
 
     }
