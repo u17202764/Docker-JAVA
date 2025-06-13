@@ -1,6 +1,6 @@
 package com.example.demodockerfile.entity;
 
-import com.example.demodockerfile.entity.dto.UserRole;
+import com.example.demodockerfile.common.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +11,8 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "users")
-@ToString
+@ToString(exclude = "password")
+
 public class UserEntity {
 
     @Id

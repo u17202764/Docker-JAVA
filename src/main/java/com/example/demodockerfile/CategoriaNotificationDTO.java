@@ -2,16 +2,16 @@ package com.example.demodockerfile;
 
 
 
-import com.example.demodockerfile.entity.Categoria;
+import com.example.demodockerfile.entity.CategoriaEntity;
 
-import com.example.demodockerfile.service.TipoAccion;
+import com.example.demodockerfile.common.TipoAccion;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class CategoriaNotificationDTO {
-    private Categoria categoria;
+    private CategoriaEntity categoria;
     private TipoAccion tipoAccion;
 
 }

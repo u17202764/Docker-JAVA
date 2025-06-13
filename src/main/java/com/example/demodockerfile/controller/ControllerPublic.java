@@ -1,9 +1,9 @@
 package com.example.demodockerfile.controller;
 
-import com.example.demodockerfile.dto.CreateClienteDto;
-import com.example.demodockerfile.dto.LoginDTO;
-import com.example.demodockerfile.dto.ProductoDTO;
-import com.example.demodockerfile.entity.Categoria;
+import com.example.demodockerfile.entity.CategoriaEntity;
+import com.example.demodockerfile.entity.ProductoEntity;
+import com.example.demodockerfile.request.CreateClienteDto;
+import com.example.demodockerfile.request.LoginRequest;
 import com.example.demodockerfile.service.CategoriaService;
 import com.example.demodockerfile.service.ProductoService;
 import com.example.demodockerfile.utils.ResponseResult;
@@ -19,9 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
-
 import static com.example.demodockerfile.validation_error.ValidationException.lanzarError;
 
 
@@ -36,7 +34,6 @@ public class ControllerPublic {
     private ProductoService productoService;
     @Autowired
     private AuthService authService;
-
     private SearchDTO searchDTO;
     private SortDTO sortDTO;
 
@@ -48,7 +45,7 @@ public class ControllerPublic {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO) {
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginDTO) {
         log.info("Intentando iniciar sesión con usuario: {}", loginDTO.getCorreo());
 
         try {
@@ -56,7 +53,6 @@ public class ControllerPublic {
             HttpHeaders headers = new HttpHeaders();
             headers.add("Authorization", "Bearer " + token);
             return ResponseResult.of("Inicio de sesión exitoso", null, HttpStatus.OK, headers);
-
         } catch (BadCredentialsException e) {
             log.error("Error de credenciales: {}", e.getMessage());
             return ResponseResult.of("Credenciales inválidas", null, HttpStatus.UNAUTHORIZED);
@@ -69,22 +65,23 @@ public class ControllerPublic {
     @GetMapping("/categoria")
     public ResponseEntity listado() {
         log.info("Listando categorias");
-        List<Categoria> listado = (List<Categoria>) categoriaService.listar();
+        List<CategoriaEntity> listado = (List<CategoriaEntity>) categoriaService.listar();
         if (listado.isEmpty()) {
             return ResponseResult.of("No hay categorias", null, HttpStatus.NOT_FOUND);
         }
+        log.info("Categorias encontradas: {}", listado.size());
+        listado.forEach(categoria -> log.info("Categoria: {}", categoria.getNombre()));
+        listado = listado.stream().filter(categoria -> categoria.isActivo()).toList();
+        if (listado.isEmpty()) {
+            return ResponseResult.of("No hay categorias activas", null, HttpStatus.NOT_FOUND);
+        }
+        log.info("Categorias activas encontradas: {}", listado.size());
         return ResponseResult.of("Listado de categorias", listado, HttpStatus.OK);
     }
 
-    @GetMapping("/producto")
-    public ResponseEntity listadoProducto() {
-        log.info("Listando productos");
-        List<ProductoDTO> listado = productoService.listarProductos();
-        return ResponseResult.of("Listado de productos", listado, HttpStatus.OK);
-    }
 
     @GetMapping("/listadoProductos")
-    public ResponseEntity<?> listarCategorias(
+    public ResponseEntity<?> listarProductos(
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "10") int size,
             @RequestParam(value = "sortField", required = false) String sortField,
@@ -95,7 +92,7 @@ public class ControllerPublic {
         log.info("Listando productos con paginación: página {}, tamaño {}, campo de ordenamiento {}, dirección de ordenamiento {}, operación de búsqueda {}, clave de búsqueda {}, valor de búsqueda {}",
                 page, size, sortField, sortDirection, searchOperation, searchKey, searchValue);
         if (searchKey != null) {
-            if(searchOperation == null) {
+            if (searchOperation == null) {
                 lanzarError(HttpStatus.BAD_REQUEST, " La operación de búsqueda es obligatoria cuando se proporciona una clave de búsqueda", "searchOperation");
             }
             if (searchValue == null || searchValue.isBlank()) {
@@ -106,17 +103,16 @@ public class ControllerPublic {
         if (sortField != null) {
             sortDTO = new SortDTO(sortField, sortDirection);
         }
-        Page<ProductoDTO> productos = productoService.listarPaginado(page, size, sortDTO, searchDTO);
+        Page<ProductoEntity> productos = productoService.listarPaginado(page, size, sortDTO, searchDTO);
 
         if (productos == null || productos.isEmpty()) {
             log.warn("No se encontraron productos en la página {} con tamaño {}", page, size);
             return ResponseResult.of("No hay categorías disponibles", null, HttpStatus.NOT_FOUND);
         }
         log.info("Categorías encontradas: {}", productos.getContent());
-
-
-        return ResponseResult.of("Listado de categorías", productos, HttpStatus.OK);
+        return ResponseResult.of("Listado de productos", productos, HttpStatus.OK);
     }
+
 
 
 }

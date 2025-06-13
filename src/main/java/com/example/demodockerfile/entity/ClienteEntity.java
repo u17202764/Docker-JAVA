@@ -1,6 +1,6 @@
 package com.example.demodockerfile.entity;
 
-import com.example.demodockerfile.entity.dto.EstadoCliente;
+import com.example.demodockerfile.common.EstadoCliente;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +22,7 @@ public class ClienteEntity {
 
     @Enumerated(EnumType.STRING)
     private EstadoCliente estado; // ACTIVO, INACTIVO, etc.
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 }

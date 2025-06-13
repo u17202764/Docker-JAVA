@@ -1,9 +1,9 @@
-package com.example.demodockerfile.dto;
+package com.example.demodockerfile.request;
 
 import lombok.Data;
 
 @Data
-public class LoginDTO {
+public class LoginRequest {
     private String correo;
     private String clave;
 }

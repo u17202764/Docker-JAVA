@@ -1,6 +1,6 @@
 package com.example.demodockerfile.service;
 
-import com.example.demodockerfile.entity.Categoria;
+import com.example.demodockerfile.entity.CategoriaEntity;
 import com.example.demodockerfile.service.repository.CategoriaRepositorio;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -21,17 +20,17 @@ public class CategoriaService {
     @Autowired
     private CategoriaRepositorio categoriaRepositorio;
     @Transactional(readOnly = true)
-    public Iterable<Categoria> listar() {
+    public Iterable<CategoriaEntity> listar() {
         return categoriaRepositorio.findAll();
     }
 
-    public Optional<Categoria> buscarPorId(Integer id) {
+    public Optional<CategoriaEntity> buscarPorId(Integer id) {
         return categoriaRepositorio.findById(id);
     }
 
 
-    public Categoria guardar(Categoria categoria) {
-        Categoria c = categoriaRepositorio.save(categoria);
+    public CategoriaEntity guardar(CategoriaEntity categoria) {
+        CategoriaEntity c = categoriaRepositorio.save(categoria);
         return c;
     }
 
@@ -43,22 +42,22 @@ public class CategoriaService {
         return categoriaRepositorio.existsById(id);
     }
 
-    public Optional<Categoria> buscarPorNombre(String nombre) {
+    public Optional<CategoriaEntity> buscarPorNombre(String nombre) {
         return categoriaRepositorio.findByNombre(nombre);
     }
 
-    public Page<Categoria> listarPaginado(int page, int size, String sortCampo, boolean sortOrden, String searchType, String searchValue, boolean searchValueExact) {
+    public Page<CategoriaEntity> listarPaginado(int page, int size, String sortCampo, boolean sortOrden, String searchType, String searchValue, boolean searchValueExact) {
         Pageable pageable = PageRequest.of(page, size,
                 sortOrden ? org.springframework.data.domain.Sort.by(sortCampo).ascending() : org.springframework.data.domain.Sort.by(sortCampo).descending());
 
-        Specification<Categoria> spec = buildSpecification(searchType, searchValue, searchValueExact);
+        Specification<CategoriaEntity> spec = buildSpecification(searchType, searchValue, searchValueExact);
         return categoriaRepositorio.findAll(spec, pageable);
 
     }
 
     private static final List<String> CAMPOS_FILTRABLES = List.of("id", "nombre", "activo");
 
-    private Specification<Categoria> buildSpecification(String searchType, String searchValue, boolean searchValueExact) {
+    private Specification<CategoriaEntity> buildSpecification(String searchType, String searchValue, boolean searchValueExact) {
         return (root, query, cb) -> {
             if (isBlank(searchType) || isBlank(searchValue)) {
                 return cb.conjunction();

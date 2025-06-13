@@ -1,23 +1,19 @@
 package com.example.demodockerfile.utils.jwt.services;
 
-import com.example.demodockerfile.dto.CreateClienteDto;
-import com.example.demodockerfile.dto.LoginDTO;
+import com.example.demodockerfile.request.CreateClienteDto;
+import com.example.demodockerfile.request.LoginRequest;
 import com.example.demodockerfile.entity.ClienteEntity;
 import com.example.demodockerfile.entity.LoginLogEntity;
 import com.example.demodockerfile.entity.UserEntity;
-import com.example.demodockerfile.entity.dto.EstadoCliente;
-import com.example.demodockerfile.entity.dto.UserRole;
+import com.example.demodockerfile.common.EstadoCliente;
+import com.example.demodockerfile.common.UserRole;
 import com.example.demodockerfile.utils.jwt.CustomUserDetails;
 import com.example.demodockerfile.utils.jwt.repository.ClienteRepository;
 import com.example.demodockerfile.utils.jwt.repository.LoginLogRepository;
 import com.example.demodockerfile.utils.jwt.repository.UserRepository;
-import com.example.demodockerfile.validation_error.ErrorResponseDTO;
-import com.example.demodockerfile.validation_error.ValidationException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,10 +25,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.swing.text.html.Option;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static com.example.demodockerfile.validation_error.ValidationException.lanzarError;
 
@@ -59,7 +51,7 @@ public class AuthService implements UserDetailsService {
     }
 
     @Transactional
-    public String session(LoginDTO loginDTO) {
+    public String session(LoginRequest loginDTO) {
         HttpServletRequest request = getCurrentHttpRequest();
         String ip = "desconocida";
         if (request != null) {

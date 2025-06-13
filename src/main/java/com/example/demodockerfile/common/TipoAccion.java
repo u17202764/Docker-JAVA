@@ -1,4 +1,4 @@
-package com.example.demodockerfile.service;
+package com.example.demodockerfile.common;
 
 
 public enum TipoAccion {

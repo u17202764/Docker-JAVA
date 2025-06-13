@@ -31,4 +31,10 @@ public class ValidationException extends RuntimeException {
         throw new ValidationException(httpStatus, errorResponseDTO);
     }
 
+    public static void lanzarError(HttpStatus httpStatus,  String message ) {
+        ErrorResponseDTO errorResponseDTO = ErrorResponseDTO.builder()
+                .message(message)
+                .build();
+        throw new ValidationException(httpStatus, errorResponseDTO);
+    }
 }

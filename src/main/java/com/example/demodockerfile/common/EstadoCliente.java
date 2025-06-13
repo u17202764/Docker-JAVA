@@ -1,4 +1,4 @@
-package com.example.demodockerfile.entity.dto;
+package com.example.demodockerfile.common;
 
 public enum EstadoCliente {
     ACTIVO,

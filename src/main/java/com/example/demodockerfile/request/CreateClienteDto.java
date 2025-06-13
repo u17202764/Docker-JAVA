@@ -1,4 +1,4 @@
-package com.example.demodockerfile.dto;
+package com.example.demodockerfile.request;
 
 
 import lombok.*;

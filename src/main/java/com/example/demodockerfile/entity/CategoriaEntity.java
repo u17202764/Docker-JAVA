@@ -18,16 +18,18 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 
-public class Categoria {
+public class CategoriaEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(unique = true, nullable = false)
     private String nombre;
     private boolean activo;
-    @JsonIgnore // evita loops infinitos al convertir a JSON
+
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Producto> productos = new ArrayList<>();
+    @JsonIgnore
+    private List<ProductoEntity> productos = new ArrayList<>();
+
 
 
 

@@ -1,7 +1,6 @@
 package com.example.demodockerfile.service;
 
-import com.example.demodockerfile.dto.ProductoDTO;
-import com.example.demodockerfile.entity.Producto;
+import com.example.demodockerfile.entity.ProductoEntity;
 import com.example.demodockerfile.service.repository.ProductoRepositorio;
 import com.example.demodockerfile.utils.SearchDTO;
 import com.example.demodockerfile.utils.SearchOperation;
@@ -17,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -33,21 +33,22 @@ public class ProductoService {
     private SimpMessagingTemplate messagingTemplate;
 
 
+
     @Transactional(readOnly = true)
-    public List<ProductoDTO> listarProductos() {
-        List<Producto> productos = (List<Producto>) productoRepositorio.findAll();
-        return productos.stream()
-                .map(ProductoDTO::new)
+    public List<ProductoEntity> listarProductos() {
+        List<ProductoEntity> productos = (List<ProductoEntity>) productoRepositorio.findAll();
+        return  productos.stream()
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
+
     }
 
-
-    public Producto guardar(Producto producto) {
+    public ProductoEntity guardar(ProductoEntity producto) {
         return productoRepositorio.save(producto);
     }
 
 
-    public Producto buscarPorId(Integer id) {
+    public ProductoEntity buscarPorId(Integer id) {
         return productoRepositorio.findById(id).orElse(null);
     }
 
@@ -56,7 +57,7 @@ public class ProductoService {
         return fileName;
     }
 
-    public Optional<Producto> buscarProductoPorNombre(String nombre) {
+    public Optional<ProductoEntity> buscarProductoPorNombre(String nombre) {
         return productoRepositorio.findByNombre(nombre);
     }
 
@@ -68,22 +69,21 @@ public class ProductoService {
             throw new RuntimeException("Error al eliminar el producto", e);
         }
     }
-    public List<Producto> litadoProducto() {
-        return (List<Producto>) productoRepositorio.findAll();
+
+    public List<ProductoEntity> litadoProducto() {
+        return (List<ProductoEntity>) productoRepositorio.findAll();
     }
-    public Page<ProductoDTO> listarPaginado(int page, int size, SortDTO sortDTO, SearchDTO searchDTO) {
+    @Transactional(readOnly = true)
+    public Page<ProductoEntity> listarPaginado(int page, int size, SortDTO sortDTO, SearchDTO searchDTO) {
 
         Pageable pageable = construirPageable(page, size, sortDTO);
 
-        Specification<Producto> spec = buildSpecification(searchDTO);
+        Specification<ProductoEntity> spec = buildSpecification(searchDTO);
 
-        Page<Producto> productos = productoRepositorio.findAll(spec, pageable);
+        Page<ProductoEntity> productos = productoRepositorio.findAll(spec, pageable);
 
-        List<ProductoDTO> productosDto = productos.stream()
-                .map(this::mapToDto)
-                .toList();
 
-        return new PageImpl<>(productosDto, pageable, productos.getTotalElements());
+        return new PageImpl<>(productos.getContent(), pageable, productos.getTotalElements());
     }
 
     private String obtenerCampoOrdenamiento(SortDTO sortDTO) {
@@ -103,7 +103,6 @@ public class ProductoService {
     }
 
 
-
     private Pageable construirPageable(int page, int size, SortDTO sortDTO) {
         String sortField = obtenerCampoOrdenamiento(sortDTO);
         return PageRequest.of(page, size, (sortDTO != null && Boolean.TRUE.equals(sortDTO.isSortDirection()))
@@ -112,63 +111,52 @@ public class ProductoService {
     }
 
 
-    private ProductoDTO mapToDto(Producto producto) {
-        ProductoDTO dto = new ProductoDTO();
-        dto.setIdProducto(producto.getIdProducto());
-        dto.setNombre(producto.getNombre());
-        dto.setPrecio(producto.getPrecio());
-        dto.setStock(producto.getStock());
-        dto.setImagen(producto.getImagen());
-        //  dto.setCategoriaNombre(producto.getCategoria() != null ? producto.getCategoria().getNombre() : null);
-        return dto;
-    }
-
-    private static final List<String> CAMPOS_FILTRABLES = List.of("idProducto","nombre", "precio", "stock");
+    private static final List<String> CAMPOS_FILTRABLES = List.of( "nombre", "precio", "stock");
 
 
-        private Specification<Producto> buildSpecification(SearchDTO searchDTO) {
-           log.info("Construyendo especificación para búsqueda: {}", searchDTO);
-            if ( searchDTO == null || isBlank(searchDTO.getSearchKey()) || isBlank(searchDTO.getSearchValue()) || searchDTO.getSearchOperation() == null) {
-                return (root, query, cb) -> cb.conjunction();
+    private Specification<ProductoEntity> buildSpecification(SearchDTO searchDTO) {
+        log.info("Construyendo especificación para búsqueda: {}", searchDTO);
+        if (searchDTO == null || isBlank(searchDTO.getSearchKey()) || isBlank(searchDTO.getSearchValue()) || searchDTO.getSearchOperation() == null) {
+            return (root, query, cb) -> cb.conjunction();
+        }
+        return (root, query, cb) -> {
+            if (!CAMPOS_FILTRABLES.contains(searchDTO.getSearchKey())) {
+                log.warn("Campo '{}' no permitido  para búsqueda", searchDTO.getSearchKey());
+                lanzarError(HttpStatus.BAD_REQUEST, " Campo no permitido para búsqueda",
+                        "Los campos permitidos son: " + CAMPOS_FILTRABLES);
             }
-            return (root, query, cb) -> {
-                if (!CAMPOS_FILTRABLES.contains(searchDTO.getSearchKey())) {
-                    log.warn("Campo '{}' no permitido  para búsqueda", searchDTO.getSearchKey());
-                    lanzarError(HttpStatus.BAD_REQUEST, " Campo no permitido para búsqueda",
-                            "Los campos permitidos son: " + CAMPOS_FILTRABLES);
-                }
-                if(searchDTO.getSearchOperation() == null) {
-                    log.warn("Operación de búsqueda no especificada  para el campo '{}'", searchDTO.getSearchKey());
-                    lanzarError(HttpStatus.BAD_REQUEST, "Operación de búsqueda no especificada",
-                            "Debes enviar searchOperation, los valores permitidos son: " + SearchOperation.values());
-                }
-                if(isBlank(searchDTO.getSearchValue())) {
-                    log.warn("Valor de búsqueda no especificado  para el campo '{}'", searchDTO.getSearchKey());
-                    lanzarError(HttpStatus.BAD_REQUEST, "Valor de búsqueda no especificado",
-                            "Debes enviar searchValue, el valor no puede estar vacío");
-                }
+            if (searchDTO.getSearchOperation() == null) {
+                log.warn("Operación de búsqueda no especificada  para el campo '{}'", searchDTO.getSearchKey());
+                lanzarError(HttpStatus.BAD_REQUEST, "Operación de búsqueda no especificada",
+                        "Debes enviar searchOperation, los valores permitidos son: " + SearchOperation.values());
+            }
+            if (isBlank(searchDTO.getSearchValue())) {
+                log.warn("Valor de búsqueda no especificado  para el campo '{}'", searchDTO.getSearchKey());
+                lanzarError(HttpStatus.BAD_REQUEST, "Valor de búsqueda no especificado",
+                        "Debes enviar searchValue, el valor no puede estar vacío");
+            }
 
-                switch (searchDTO.getSearchOperation()) {
-                    case INEXACTO:// para texto
-                        return cb.like(root.get(searchDTO.getSearchKey()), "%" + searchDTO.getSearchValue() + "%");
+            switch (searchDTO.getSearchOperation()) {
+                case INEXACTO:// para texto
+                    return cb.like(root.get(searchDTO.getSearchKey()), "%" + searchDTO.getSearchValue() + "%");
 
-                    case EXACTO: // para texto y números
-                        return cb.equal(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
-                    case MAYOR:
-                        return cb.greaterThan(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
-                    case MENOR:
-                        return cb.lessThan(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
-                    case MAYOR_IGUAL:
-                        return cb.greaterThanOrEqualTo(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
-                    case MENOR_IGUAL:
-                        return cb.lessThanOrEqualTo(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                case EXACTO: // para texto y números
+                    return cb.equal(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                case MAYOR:
+                    return cb.greaterThan(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                case MENOR:
+                    return cb.lessThan(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                case MAYOR_IGUAL:
+                    return cb.greaterThanOrEqualTo(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
+                case MENOR_IGUAL:
+                    return cb.lessThanOrEqualTo(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
 
-                    default:
-                        log.info("Operación de búsqueda '{}' no válida, se usará INEXACTO por defecto", searchDTO.getSearchOperation());
-                        lanzarError(HttpStatus.BAD_REQUEST, "Operación de búsqueda no válida",
-                                "Los valores permitidos son: " + SearchOperation.values());
-                }
-                return null;
-            };
+                default:
+                    log.info("Operación de búsqueda '{}' no válida, se usará INEXACTO por defecto", searchDTO.getSearchOperation());
+                    lanzarError(HttpStatus.BAD_REQUEST, "Operación de búsqueda no válida",
+                            "Los valores permitidos son: " + SearchOperation.values());
+            }
+            return null;
+        };
     }
 }
