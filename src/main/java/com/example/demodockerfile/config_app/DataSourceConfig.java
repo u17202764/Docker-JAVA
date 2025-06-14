@@ -44,8 +44,6 @@ public class DataSourceConfig {
         }
     }
 
-
-
     private DriverManagerDataSource crearDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setUrl(dbUrl);

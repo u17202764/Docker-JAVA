@@ -19,7 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
+import java.util.Optional;
+
 import static com.example.demodockerfile.validation_error.ValidationException.lanzarError;
 
 
@@ -83,7 +86,7 @@ public class ControllerPublic {
     @GetMapping("/listadoProductos")
     public ResponseEntity<?> listarProductos(
             @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size,
+            @RequestParam(value = "size", defaultValue = "4") int size,
             @RequestParam(value = "sortField", required = false) String sortField,
             @RequestParam(value = "sortDirection", required = false) boolean sortDirection,
             @RequestParam(value = "searchOperation", required = false) SearchOperation searchOperation,
@@ -114,5 +117,16 @@ public class ControllerPublic {
     }
 
 
+    @GetMapping("/producto/{id}")
+    public ResponseEntity<?> obtenerProductoPorId(@PathVariable("id") Integer id) {
+        log.info("Obteniendo producto con ID: {}", id);
+        Optional<ProductoEntity> producto = productoService.obtenerPorId(id);
+        if (producto.isEmpty()) {
+            log.warn("Producto con ID {} no encontrado", id);
+            lanzarError(HttpStatus.NOT_FOUND, "Producto no encontrado");
+        }
+        log.info("Producto encontrado: {}", producto);
+        return ResponseResult.of("Producto encontrado", producto, HttpStatus.OK);
+    }
 
 }

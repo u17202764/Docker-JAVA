@@ -33,11 +33,10 @@ public class ProductoService {
     private SimpMessagingTemplate messagingTemplate;
 
 
-
     @Transactional(readOnly = true)
     public List<ProductoEntity> listarProductos() {
         List<ProductoEntity> productos = (List<ProductoEntity>) productoRepositorio.findAll();
-        return  productos.stream()
+        return productos.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
@@ -73,6 +72,7 @@ public class ProductoService {
     public List<ProductoEntity> litadoProducto() {
         return (List<ProductoEntity>) productoRepositorio.findAll();
     }
+
     @Transactional(readOnly = true)
     public Page<ProductoEntity> listarPaginado(int page, int size, SortDTO sortDTO, SearchDTO searchDTO) {
 
@@ -111,7 +111,7 @@ public class ProductoService {
     }
 
 
-    private static final List<String> CAMPOS_FILTRABLES = List.of( "nombre", "precio", "stock");
+    private static final List<String> CAMPOS_FILTRABLES = List.of("nombre", "precio", "stock");
 
 
     private Specification<ProductoEntity> buildSpecification(SearchDTO searchDTO) {
@@ -159,4 +159,11 @@ public class ProductoService {
             return null;
         };
     }
+
+
+    public Optional<ProductoEntity> obtenerPorId(Integer id) {
+        log.info("Obteniendo producto por ID: {}", id);
+        return Optional.ofNullable(productoRepositorio.findById(id)).orElse(null);
+    }
+
 }
