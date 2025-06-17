@@ -90,7 +90,7 @@ public class ControllerClient {
 
 
   @GetMapping("/pedidos/detalis/{numeroPedido}")
-  private ResponseEntity<?> verDetallesPedido(@PathVariable Integer numeroPedido) {
+  private ResponseEntity<?> verDetallesPedido(@PathVariable String numeroPedido) {
         log.info("Consultando detalles del pedido con número: {}", numeroPedido);
       Optional<PedidoEntity> pedidoEntity = pedidoService.optionalPedidoEntity(numeroPedido);
         if (pedidoEntity.isEmpty()) {

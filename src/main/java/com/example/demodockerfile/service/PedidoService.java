@@ -26,8 +26,8 @@ public class PedidoService {
     }
 
 
-    public Optional<PedidoEntity> optionalPedidoEntity(Integer idPedido) {
-        log.info("Buscando pedido con ID: {}", idPedido);
-        return Optional.ofNullable(pedidoRepositorio.findById(idPedido).orElse(null));
+    public Optional<PedidoEntity> optionalPedidoEntity(String numeroPedido) {
+        log.info("Buscando pedido con ID: {}", numeroPedido);
+        return Optional.ofNullable(pedidoRepositorio.findByNumeroPedido(numeroPedido).orElse(null));
     }
 }

@@ -139,7 +139,6 @@ public class ProductoService {
             switch (searchDTO.getSearchOperation()) {
                 case INEXACTO:// para texto
                     return cb.like(root.get(searchDTO.getSearchKey()), "%" + searchDTO.getSearchValue() + "%");
-
                 case EXACTO: // para texto y números
                     return cb.equal(root.get(searchDTO.getSearchKey()), searchDTO.getSearchValue());
                 case MAYOR:
