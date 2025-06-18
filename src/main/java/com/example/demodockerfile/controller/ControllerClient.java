@@ -80,12 +80,12 @@ public class ControllerClient {
 
 
         PedidoEntity pedidoGenerado = pedidoService.crearPedido(total, pedidoRequest.getProductos().size(), cliente);
-        log.info("Pedido creado con ID: {}", pedidoGenerado.getIdPedido());
+        log.info("Pedido creado con ID: {}", pedidoGenerado.getNumeroPedido());
 
 
-        PedidoResponse pedidoResponse = buildPedidoResponse(pedidoGenerado, clienteEntityOptional.get(), detalles);
+       // PedidoResponse pedidoResponse = buildPedidoResponse(pedidoGenerado, clienteEntityOptional.get(), detalles);
 
-        return ResponseResult.of("Pedido Generado ", pedidoResponse, HttpStatus.OK);
+        return ResponseResult.of("Pedido Generado ", pedidoGenerado.getNumeroPedido(), HttpStatus.OK);
     }
 
 

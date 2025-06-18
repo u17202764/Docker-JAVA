@@ -14,7 +14,6 @@ import java.util.List;
 public class PedidoRequest {
     private List<ProductoRequest> productos;
     private MetodoPago metodoPago;
-    private BigDecimal totalPagar;//calculado a partir de los productos
-    private Moneda moneda;
+
 
 }
